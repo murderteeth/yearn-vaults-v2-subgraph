@@ -70,8 +70,7 @@ export class GenericWithdrawTransition {
       preWithdrawStub.depositLimit, // depositLimit
       preWithdrawStub.availableDepositLimit, // availableDepositLimit
       newShareTokenStub.postTransitionStub,
-      newWantTokenStub.postTransitionStub,
-      preWithdrawStub.withDrawlQueue
+      newWantTokenStub.postTransitionStub
     );
 
     // now trigger the transfer handlers that we skipped earlier

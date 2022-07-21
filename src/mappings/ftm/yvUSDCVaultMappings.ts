@@ -25,7 +25,6 @@ import {
   StrategyAddedToQueue as StrategyAddedToQueueEvent,
   StrategyRemovedFromQueue as StrategyRemovedFromQueueEvent,
   UpdateRewards as UpdateRewardsEvent,
-  UpdateWithdrawalQueue,
 } from '../../../generated/ftmYvUSDCVault/Vault';
 import { Strategy, Transaction, Vault } from '../../../generated/schema';
 import { isEventBlockNumberLt, printCallInfo } from '../../utils/commons';
@@ -281,17 +280,12 @@ export function handleStrategyMigrated(event: StrategyMigrated): void {
           null,
           ethTransaction
         );
+        vaultLibrary.strategyRemovedFromQueue(
+          oldStrategyAddress,
+          ethTransaction,
+          event
+        );
       }
-      //We can now remove the old strat from the queue
-      log.info('[Strategy Migrated] Removing old strategy', [
-        oldStrategyAddress.toHexString(),
-      ]);
-
-      vaultLibrary.strategyRemovedFromQueue(
-        oldStrategyAddress,
-        ethTransaction,
-        event
-      );
     }
   }
 }
@@ -325,7 +319,7 @@ export function handleDeposit(call: DepositCall): void {
     );
     createFTMYvUSDCVaultIfNeeded(call.to, transaction);
     let vaultContract = VaultContract.bind(call.to);
-    let totalAssets = vaultContract.totalAssets();
+    let totalAssets = vaultLibrary.getTotalAssets(call.to);
     let totalSupply = vaultContract.totalSupply();
     let sharesAmount = call.outputs.value0;
     log.info(
@@ -480,7 +474,7 @@ export function handleWithdraw(call: WithdrawCall): void {
     let vaultContract = VaultContract.bind(call.to);
 
     let withdrawnAmount = call.outputs.value0;
-    let totalAssets = vaultContract.totalAssets();
+    let totalAssets = vaultLibrary.getTotalAssets(call.to);
     let totalSupply = vaultContract.totalSupply();
     let totalSharesBurnt = totalAssets.equals(BIGINT_ZERO)
       ? withdrawnAmount
@@ -685,7 +679,7 @@ export function handleTransfer(event: TransferEvent): void {
       );
       createFTMYvUSDCVaultIfNeeded(event.address, transaction);
       let vaultContract = VaultContract.bind(event.address);
-      let totalAssets = vaultContract.totalAssets();
+      let totalAssets = vaultLibrary.getTotalAssets(event.address);
       let totalSupply = vaultContract.totalSupply();
       let sharesAmount = event.params.value;
       let amount = sharesAmount.times(totalAssets).div(totalSupply);
@@ -807,29 +801,6 @@ export function handleStrategyRemovedFromQueue(
     );
     vaultLibrary.strategyRemovedFromQueue(
       event.params.strategy,
-      ethTransaction,
-      event
-    );
-  }
-}
-
-export function handleUpdateWithdrawalQueue(
-  event: UpdateWithdrawalQueue
-): void {
-  if (
-    isEventBlockNumberLt(
-      'ftmYvUSDCVault_UpdateWithdrawalQueue',
-      event.block,
-      FTM_YV_USDC_VAULT_END_BLOCK_CUSTOM
-    )
-  ) {
-    let ethTransaction = getOrCreateTransactionFromEvent(
-      event,
-      'ftmYvUSDCVault_UpdateWithdrawalQueue'
-    );
-
-    vaultLibrary.UpdateWithdrawalQueue(
-      event.params.queue,
       ethTransaction,
       event
     );

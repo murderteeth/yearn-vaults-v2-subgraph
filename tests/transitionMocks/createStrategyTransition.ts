@@ -10,13 +10,10 @@ import { handleStrategyAddedV1 } from '../../src/mappings/vaultMappings';
 export class CreateStrategyTransition {
   static DefaultAddress: string = StrategyStub.DefaultAddress;
 
-  static DefaultStrategy(
-    vaultStub: VaultStub,
-    address: string = StrategyStub.DefaultAddress
-  ): CreateStrategyTransition {
+  static DefaultStrategy(vaultStub: VaultStub): CreateStrategyTransition {
     let strategyStub = new StrategyStub(
       null,
-      address,
+      null,
       vaultStub.shareToken.address,
       null,
       true,
@@ -50,7 +47,7 @@ export class CreateStrategyTransition {
       true,
       vaultStub.wantToken,
       null,
-      false,
+      null,
       false,
       null,
       null,
@@ -77,8 +74,7 @@ export class CreateStrategyTransition {
     debtLimit: string | null,
     rateLimit: string | null,
     performanceFee: string | null,
-    stub: StrategyStub | null,
-    version: string = 'v1'
+    stub: StrategyStub | null
   ) {
     if (stub) {
       this.stub = stub;

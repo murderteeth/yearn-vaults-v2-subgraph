@@ -30,7 +30,7 @@ import {
   DON_T_CREATE_VAULT_TEMPLATE,
   ETH_MAINNET_REGISTRY_ADDRESS_V2,
   EXPERIMENTAL,
-  API_VERSION_0_4_2,
+  API_VERSION_0_4_3,
 } from '../utils/constants';
 import * as strategyLibrary from '../utils/strategy/strategy';
 import {
@@ -42,7 +42,6 @@ import {
   UpdateGovernance,
   UpdateGuardian,
   UpdateManagement,
-  UpdateWithdrawalQueue,
 } from '../../generated/YvLinkVault/Vault';
 
 function createYvLinkVaultIfNeeded(
@@ -54,7 +53,7 @@ function createYvLinkVaultIfNeeded(
     // Note: This custom mapping is not used in Fantom. So, we can hardcoded the address.
     changetype<Address>(Address.fromHexString(ETH_MAINNET_REGISTRY_ADDRESS_V2)),
     EXPERIMENTAL,
-    API_VERSION_0_4_2,
+    API_VERSION_0_4_3,
     transaction,
     DON_T_CREATE_VAULT_TEMPLATE
   );
@@ -233,17 +232,12 @@ export function handleStrategyMigrated(event: StrategyMigrated): void {
           null,
           ethTransaction
         );
+        vaultLibrary.strategyRemovedFromQueue(
+          oldStrategyAddress,
+          ethTransaction,
+          event
+        );
       }
-      //We can now remove the old strat from the queue
-      log.info('[Strategy Migrated] Removing old strategy', [
-        oldStrategyAddress.toHexString(),
-      ]);
-
-      vaultLibrary.strategyRemovedFromQueue(
-        oldStrategyAddress,
-        ethTransaction,
-        event
-      );
     }
   }
 }
@@ -277,7 +271,7 @@ export function handleDeposit(call: DepositCall): void {
     );
     createYvLinkVaultIfNeeded(call.to, transaction);
     let vaultContract = VaultContract.bind(call.to);
-    let totalAssets = vaultContract.totalAssets();
+    let totalAssets = vaultLibrary.getTotalAssets(call.to);
     let totalSupply = vaultContract.totalSupply();
     let sharesAmount = call.outputs.value0;
     log.info(
@@ -432,7 +426,7 @@ export function handleWithdraw(call: WithdrawCall): void {
     let vaultContract = VaultContract.bind(call.to);
 
     let withdrawnAmount = call.outputs.value0;
-    let totalAssets = vaultContract.totalAssets();
+    let totalAssets = vaultLibrary.getTotalAssets(call.to);
     let totalSupply = vaultContract.totalSupply();
     let totalSharesBurnt = totalAssets.equals(BIGINT_ZERO)
       ? withdrawnAmount
@@ -637,7 +631,7 @@ export function handleTransfer(event: TransferEvent): void {
       );
       createYvLinkVaultIfNeeded(event.address, transaction);
       let vaultContract = VaultContract.bind(event.address);
-      let totalAssets = vaultContract.totalAssets();
+      let totalAssets = vaultLibrary.getTotalAssets(event.address);
       let totalSupply = vaultContract.totalSupply();
       let sharesAmount = event.params.value;
       let amount = sharesAmount.times(totalAssets).div(totalSupply);
@@ -737,29 +731,6 @@ export function handleStrategyAddedToQueue(
 
     vaultLibrary.strategyAddedToQueue(
       event.params.strategy,
-      ethTransaction,
-      event
-    );
-  }
-}
-
-export function handleUpdateWithdrawalQueue(
-  event: UpdateWithdrawalQueue
-): void {
-  if (
-    isEventBlockNumberLt(
-      'yvLinkVault_UpdateWithdrawalQueue',
-      event.block,
-      YV_LINK_VAULT_END_BLOCK_CUSTOM
-    )
-  ) {
-    let ethTransaction = getOrCreateTransactionFromEvent(
-      event,
-      'yvLinkVault_UpdateWithdrawalQueue'
-    );
-
-    vaultLibrary.UpdateWithdrawalQueue(
-      event.params.queue,
       ethTransaction,
       event
     );

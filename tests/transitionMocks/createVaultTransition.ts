@@ -42,8 +42,7 @@ export class CreateVaultTransition {
           null, // token balances
           null, // token usdc value
           null // price oracle address
-        ),
-        null // withDrawlQueue
+        )
       ),
       null, // registryAddress
       null, // releaseId
@@ -91,8 +90,7 @@ export class CreateVaultTransition {
         wantTokenBalances, // token balances
         null, // token usdc value
         null // price oracle address
-      ),
-      null
+      )
     );
 
     return new CreateVaultTransition(
@@ -140,8 +138,7 @@ export class CreateVaultTransition {
         wantTokenBalances, // token balances
         null, // token usdc value
         null // price oracle address
-      ),
-      null
+      )
     );
 
     return new CreateVaultTransition(
@@ -190,8 +187,7 @@ export class CreateVaultTransition {
         null, // depositLimit
         null, // availableDepositLimit
         shareToken, // shareToken
-        wantToken, // wantToken
-        null //withdrawlQueue
+        wantToken // wantToken
       );
     }
 

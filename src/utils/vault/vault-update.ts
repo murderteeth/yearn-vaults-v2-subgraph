@@ -11,6 +11,7 @@ import { BIGINT_ZERO } from '../constants';
 import { updateVaultDayData } from './vault-day-data';
 import { Vault as VaultContract } from '../../../generated/Registry/Vault';
 import * as tokenFeeLibrary from './../token-fees';
+import { getTotalAssets } from './vault';
 
 export function buildIdFromVaultTxHashAndIndex(
   vault: string,
@@ -111,7 +112,8 @@ function constructVaultUpdateEntity(
     previousVaultUpdate = VaultUpdate.load(vault.latestUpdate!);
   }
 
-  let vaultContract = VaultContract.bind(Address.fromString(vault.id));
+  let vaultAddress = Address.fromString(vault.id);
+  let vaultContract = VaultContract.bind(vaultAddress);
   // Populate the totalFees parameter.
   // This field is accrued, so we're trying to add the value passed to createVaultUpdate to whatever
   // the previous accrued value was in the previous update.
@@ -133,7 +135,7 @@ function constructVaultUpdateEntity(
 
   // Populate the following parameters based on the vault's current state.
   let pricePerShare: BigInt = vaultContract.pricePerShare();
-  let balanceTokens: BigInt = vaultContract.totalAssets();
+  let balanceTokens: BigInt = getTotalAssets(vaultAddress);
 
   let vaultUpdate = new VaultUpdate(id);
   vaultUpdate.totalFees = totalFees;

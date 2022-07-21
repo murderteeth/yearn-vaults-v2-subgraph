@@ -22,7 +22,6 @@ import {
   handleWithdrawEvent,
 } from '../src/mappings/vaultMappings';
 import { TokenStub } from './stubs/tokenStateStub';
-import { BIGINT_MAX, MAX_UINT } from '../src/utils/constants';
 
 test('Test handleDeposit (call)', () => {
   clearStore();
@@ -145,7 +144,7 @@ test('Test handleDepositWithAmountAndRecipient (call)', () => {
 test('Test handleWithdraw (call)', () => {
   clearStore();
   // set up the deposit
-  let amount = BIGINT_MAX.toString();
+  let amount = '79056085';
   let shareTokenBalances = new Map<string, string>();
   let sender = defaults.senderAddress;
   let vaultAddress = VaultStub.DefaultAddress;
@@ -236,8 +235,7 @@ test('Deposit call handlers shouldnt fire if Vault apiVersion > 0.4.3', () => {
         wantTokenBalances, // token balances
         null, // token usdc value
         null // price oracle address
-      ),
-      null //withdrawlQueue
+      )
     ),
     null, //registryAddress
     null, //releaseId
@@ -307,8 +305,7 @@ test('Withdraw call handlers shouldnt fire if Vault apiVersion > 0.4.3', () => {
         wantTokenBalances, // token balances
         null, // token usdc value
         null // price oracle address
-      ),
-      null //withdrawlQueue
+      )
     ),
     null, //registryAddress
     null, //releaseId

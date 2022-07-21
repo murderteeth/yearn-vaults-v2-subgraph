@@ -26,7 +26,7 @@ import * as transferLibrary from '../transfer';
 import * as tokenLibrary from '../token';
 import * as registryLibrary from '../registry/registry';
 import { updateVaultDayData } from './vault-day-data';
-import { booleanToString, removeElementFromArray } from '../commons';
+import { booleanToString } from '../commons';
 import { getOrCreateHealthCheck } from '../healthCheck';
 
 const buildId = (vaultAddress: Address): string => {
@@ -84,9 +84,6 @@ const createNewVaultFromAddress = (
   vaultEntity.activation = vaultContract.activation();
   vaultEntity.apiVersion = vaultContract.apiVersion();
 
-  //Empty at creation
-  vaultEntity.withdrawalQueue = [];
-
   return vaultEntity;
 };
 
@@ -96,7 +93,7 @@ export function getOrCreate(
   createTemplate: boolean
 ): Vault {
   log.debug('[Vault] Get or create', []);
-  let id = vaultAddress.toHexString();
+  let id = buildId(vaultAddress);
   let vault = Vault.load(id);
 
   if (vault == null) {
@@ -187,7 +184,7 @@ export function release(
 }
 
 export function tag(vault: Address, tag: string): Vault | null {
-  let id = vault.toHexString();
+  let id = buildId(vault);
   log.info('Processing tag for vault address: {}', [id]);
   let entity = Vault.load(id);
   if (entity == null) {
@@ -240,7 +237,7 @@ export function deposit(
 
   let vaultUpdate: VaultUpdate;
   let balancePosition = getBalancePosition(vaultContract);
-  let totalAssets = getTotalAssets(vaultContract);
+  let totalAssets = getTotalAssets(vaultAddress);
   if (vault.latestUpdate == null) {
     vaultUpdate = vaultUpdateLibrary.firstDeposit(
       vault,
@@ -268,7 +265,7 @@ export function calculateAmountDeposited(
   sharesMinted: BigInt
 ): BigInt {
   let vaultContract = VaultContract.bind(vaultAddress);
-  let totalAssets = vaultContract.totalAssets();
+  let totalAssets = getTotalAssets(vaultAddress);
   let totalSupply = vaultContract.totalSupply();
   let amount = totalSupply.isZero()
     ? BIGINT_ZERO
@@ -398,7 +395,7 @@ export function withdraw(
         sharesBurnt,
         transaction,
         balancePosition,
-        getTotalAssets(vaultContract)
+        getTotalAssets(vaultAddress)
       );
     }
   } else {
@@ -474,7 +471,7 @@ export function strategyReported(
     transaction,
     balancePosition,
     grossReturnsGenerated,
-    getTotalAssets(vaultContract)
+    getTotalAssets(vaultAddress)
   );
 }
 
@@ -496,7 +493,7 @@ export function performanceFeeUpdated(
       ethTransaction,
       getBalancePosition(vaultContract),
       performanceFee,
-      getTotalAssets(vaultContract)
+      getTotalAssets(vaultAddress)
     ) as VaultUpdate;
     vault.latestUpdate = vaultUpdate.id;
 
@@ -528,7 +525,7 @@ export function managementFeeUpdated(
       ethTransaction,
       getBalancePosition(vaultContract),
       managementFee,
-      getTotalAssets(vaultContract)
+      getTotalAssets(vaultAddress)
     ) as VaultUpdate;
     vault.latestUpdate = vaultUpdate.id;
 
@@ -554,19 +551,6 @@ export function strategyAddedToQueue(
   if (strategy !== null) {
     strategy.inQueue = true;
     strategy.save();
-
-    let vault = Vault.load(event.address.toHexString());
-    if (vault != null) {
-      //Add the new strategy to the withdrawl queue
-      let withdrawlQueue = vault.withdrawalQueue;
-      //Only add strategy to queue when its not was previously added
-      if (!withdrawlQueue.includes(strategy.address.toHexString())) {
-        withdrawlQueue.push(strategy.address.toHexString());
-      }
-      vault.withdrawalQueue = withdrawlQueue;
-
-      vault.save();
-    }
   }
 }
 
@@ -582,57 +566,6 @@ export function strategyRemovedFromQueue(
   if (strategy !== null) {
     strategy.inQueue = false;
     strategy.save();
-
-    let vault = Vault.load(event.address.toHexString());
-    if (vault != null) {
-      vault.withdrawalQueue = removeElementFromArray(
-        vault.withdrawalQueue,
-        strategy.address.toHexString()
-      );
-
-      vault.save();
-    }
-  }
-}
-
-export function UpdateWithdrawalQueue(
-  newQueue: Address[],
-  ethTransaction: Transaction,
-  event: ethereum.Event
-): void {
-  let vault = Vault.load(event.address.toHexString());
-  if (vault != null) {
-    const oldWithdrawlQueue = vault.withdrawalQueue;
-    //Before we can set the new queue we need to remove all previous strats
-    for (let i = 0; i < oldWithdrawlQueue.length; i++) {
-      let currentStrategyAddress = oldWithdrawlQueue[i];
-      let currentStrategy = Strategy.load(currentStrategyAddress);
-
-      //Setting the inQueue field on the strat to false
-      if (currentStrategy !== null) {
-        currentStrategy.inQueue = false;
-        currentStrategy.save();
-      }
-    }
-    //Initialize a new empty queue
-    let vaultsNewWithdrawlQueue = new Array<string>();
-
-    //Now we can add the new strats to the queue
-    for (let i = 0; i < newQueue.length; i++) {
-      let currentStrategyAddress = newQueue[i].toHexString();
-      let currentStrategy = Strategy.load(currentStrategyAddress);
-
-      //Setting the inQueue field on the strat to true
-      if (currentStrategy !== null) {
-        currentStrategy.inQueue = true;
-        currentStrategy.save();
-      }
-
-      //Add the strates addr to the vaults withdrawlQueue
-      vaultsNewWithdrawlQueue.push(currentStrategyAddress);
-    }
-    vault.withdrawalQueue = vaultsNewWithdrawlQueue;
-    vault.save();
   }
 }
 
@@ -653,7 +586,7 @@ export function handleUpdateRewards(
       vault as Vault,
       ethTransaction,
       getBalancePosition(vaultContract),
-      getTotalAssets(vaultContract),
+      getTotalAssets(vaultAddress),
       rewards
     ) as VaultUpdate;
     vault.latestUpdate = vaultUpdate.id;
@@ -667,31 +600,48 @@ export function handleUpdateRewards(
   }
 }
 
+export function getTotalAssets(vaultAddress: Address): BigInt {
+  let vaultContract = VaultContract.bind(vaultAddress);
+  let tryTotalAssets = vaultContract.try_totalAssets();
+  // TODO Debugging Use totalAssets directly
+  let totalAssets = tryTotalAssets.reverted
+    ? BigInt.fromI32(0)
+    : tryTotalAssets.value;
+  return totalAssets;
+}
+
 function getBalancePosition(vaultContract: VaultContract): BigInt {
-  let totalAssets = vaultContract.totalAssets();
+  let tryTotalAssets = vaultContract.try_totalAssets();
+  // TODO Debugging Use totalAssets directly
+  let totalAssets = tryTotalAssets.reverted
+    ? BigInt.fromI32(0)
+    : tryTotalAssets.value;
+
+  if (tryTotalAssets.reverted) {
+    log.warning(
+      'try_totalAssets (getBalancePosition) FAILED Vault {} - TotalAssets',
+      [vaultContract._address.toHexString(), totalAssets.toString()]
+    );
+  }
   let tryPricePerShare = vaultContract.try_pricePerShare();
   let pricePerShare = tryPricePerShare.reverted
     ? BigInt.fromI32(0)
     : tryPricePerShare.value;
   // TODO Debugging Use pricePerShare directly
   if (tryPricePerShare.reverted) {
-    log.warning('try_pricePerShare FAILED Vault {} - PricePerShare', [
-      vaultContract._address.toHexString(),
-      pricePerShare.toString(),
-    ]);
+    log.warning(
+      'try_pricePerShare (getBalancePosition) FAILED Vault {} - PricePerShare',
+      [vaultContract._address.toHexString(), pricePerShare.toString()]
+    );
   } else {
-    log.warning('try_pricePerShare SUCCESS Vault {} - PricePerShare', [
-      vaultContract._address.toHexString(),
-      pricePerShare.toString(),
-    ]);
+    log.warning(
+      'try_pricePerShare (getBalancePosition) SUCCESS Vault {} - PricePerShare',
+      [vaultContract._address.toHexString(), pricePerShare.toString()]
+    );
   }
   // @ts-ignore
   let decimals = u8(vaultContract.decimals().toI32());
   return totalAssets.times(pricePerShare).div(BigInt.fromI32(10).pow(decimals));
-}
-
-function getTotalAssets(vaultContract: VaultContract): BigInt {
-  return vaultContract.totalAssets();
 }
 
 export function createCustomVaultIfNeeded(

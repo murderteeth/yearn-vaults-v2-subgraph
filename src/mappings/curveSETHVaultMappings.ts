@@ -1,3 +1,4 @@
+import { log, BigInt } from '@graphprotocol/graph-ts';
 import {
   UpdateDepositLimit,
   UpdateGovernance,
@@ -5,18 +6,22 @@ import {
   UpdateManagement,
 } from '../../generated/CurveSETHVault/Vault';
 import {
-  StrategyAdded1 as StrategyAddedV2Event,
-  UpdateManagementFee as UpdateManagementFeeEvent,
-  UpdatePerformanceFee as UpdatePerformanceFeeEvent,
   Vault as VaultContract,
+  UpdatePerformanceFee as UpdatePerformanceFeeEvent,
+  UpdateManagementFee as UpdateManagementFeeEvent,
+  StrategyAdded1 as StrategyAddedV2Event,
 } from '../../generated/Registry/Vault';
+import { Vault } from '../../generated/schema';
 import { isEventBlockNumberLt } from '../utils/commons';
 import {
   BIGINT_ZERO,
   CURVE_SETH_VAULT_END_BLOCK_CUSTOM,
 } from '../utils/constants';
 import * as strategyLibrary from '../utils/strategy/strategy';
-import { getOrCreateTransactionFromEvent } from '../utils/transaction';
+import {
+  getOrCreateTransactionFromCall,
+  getOrCreateTransactionFromEvent,
+} from '../utils/transaction';
 import * as vaultLibrary from '../utils/vault/vault';
 
 /**
