@@ -83,6 +83,11 @@ const createNewVaultFromAddress = (
   // vault fields
   vaultEntity.activation = vaultContract.activation();
   vaultEntity.apiVersion = vaultContract.apiVersion();
+  vaultEntity.activationBlockNumber = transaction.blockNumber;
+  let tryEmergencyShutdown = vaultContract.try_emergencyShutdown();
+  vaultEntity.emergencyShutdown = tryEmergencyShutdown.reverted
+    ? false
+    : tryEmergencyShutdown.value;
 
   return vaultEntity;
 };
@@ -829,6 +834,37 @@ export function handleUpdateDepositLimit(
         : tryTotalAssets.value;
       vault.availableDepositLimit = vault.depositLimit.minus(totalAssets);
     }
+    vault.save();
+  }
+}
+
+export function handleEmergencyShutdown(
+  vaultAddress: Address,
+  emergencyShutdown: boolean,
+  transaction: Transaction
+): void {
+  let vault = Vault.load(buildId(vaultAddress));
+  if (vault === null) {
+    log.warning(
+      'Failed to update emergency shutdown, vault does not exist. Vault address: {} emergencyShutdown: {}  Txn hash: {}',
+      [
+        buildId(vaultAddress),
+        emergencyShutdown.toString(),
+        transaction.hash.toHexString(),
+      ]
+    );
+    return;
+  } else {
+    log.info(
+      'Vault emergency shutdown updated. Address: {}, emergencyShutdown: {}, on Txn hash: {}',
+      [
+        buildId(vaultAddress),
+        emergencyShutdown.toString(),
+        transaction.hash.toHexString(),
+      ]
+    );
+
+    vault.emergencyShutdown = emergencyShutdown;
     vault.save();
   }
 }

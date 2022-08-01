@@ -30,7 +30,8 @@ test('Test handleNewRelease', () => {
     null, // depositLimit
     null, // availableDepositLimit
     TokenStub.DefaultToken(VaultStub.DefaultAddress), // shareToken
-    TokenStub.DefaultToken(TokenStub.DefaultTokenAddress) // wantToken
+    TokenStub.DefaultToken(TokenStub.DefaultTokenAddress), // wantToken
+    null // emergency shutdown
   );
 
   let newReleaseEvent = new NewReleaseEventBuilder(

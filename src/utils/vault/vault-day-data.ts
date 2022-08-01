@@ -34,6 +34,7 @@ export function updateVaultDayData(
     vaultDayData.totalReturnsGeneratedUSDC = BIGINT_ZERO;
     vaultDayData.dayReturnsGenerated = BIGINT_ZERO;
     vaultDayData.dayReturnsGeneratedUSDC = BIGINT_ZERO;
+    vaultDayData.blockNumber = transaction.blockNumber;
     log.debug('[VaultDayData] VaultDayData object built.', []);
   }
 

@@ -11,6 +11,7 @@ import {
 } from '../src/mappings/vaultMappings';
 import {
   MockUpdateDepositLimitTransition,
+  MockUpdateEmergencyShutdownTransition,
   MockUpdateGovernanceTransition,
   MockUpdateGuardianTransition,
   MockUpdateManagementFeeTransition,
@@ -20,6 +21,7 @@ import {
 } from './transitionMocks/vaultAttributeTransitions';
 import { Vault as VaultSchema } from '../generated/schema';
 import { CreateStrategyTransition } from './transitionMocks/createStrategyTransition';
+import { log } from '@graphprotocol/graph-ts';
 
 test('Test UpdateManagementFee Event', () => {
   clearStore();
@@ -199,6 +201,19 @@ test('Test UpdateGovernance Event', () => {
     newGovernance
   );
   assert.fieldEquals('Vault', vaultAddr!, 'governance', newGovernance);
+});
+
+test('Test EmergencyShutdown Event', () => {
+  clearStore();
+
+  let vault = CreateVaultTransition.DefaultVault();
+  let vaultAddr = vault.stub.shareToken.address;
+  assert.fieldEquals('Vault', vaultAddr, 'emergencyShutdown', 'false');
+  let managementUpdate = new MockUpdateEmergencyShutdownTransition(
+    vault.stub,
+    'true'
+  );
+  assert.fieldEquals('Vault', vaultAddr!, 'emergencyShutdown', 'true');
 });
 
 test('Test UpdateDepositLimit Event', () => {

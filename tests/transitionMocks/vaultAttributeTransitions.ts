@@ -1,4 +1,4 @@
-import { Address, BigInt, ethereum } from '@graphprotocol/graph-ts';
+import { Address, BigInt, ethereum, log } from '@graphprotocol/graph-ts';
 import {
   handleUpdateDepositLimit,
   handleUpdateGovernance,
@@ -7,6 +7,7 @@ import {
   handleUpdateManagementFee,
   handleUpdatePerformanceFee,
   handleUpdateRewards,
+  handleEmergencyShutdown,
 } from '../../src/mappings/vaultMappings';
 import { MockBlock } from '../mappingParamBuilders/mockBlock';
 import { VaultStub } from '../stubs/vaultStateStub';
@@ -18,6 +19,7 @@ import {
   UpdateManagementFee,
   UpdatePerformanceFee,
   UpdateRewards,
+  EmergencyShutdown,
 } from '../../generated/Registry/Vault';
 import { GenericAttributeUpdateEvent } from '../mappingParamBuilders/genericUpdateParam';
 
@@ -163,6 +165,28 @@ export class MockUpdateGovernanceTransition {
 
     handleUpdateGovernance(this.mockEvent.mock);
 
+    MockBlock.IncrementBlock();
+  }
+}
+
+export class MockUpdateEmergencyShutdownTransition {
+  mockEvent: GenericAttributeUpdateEvent<EmergencyShutdown, boolean>;
+  preTransitionStub: VaultStub;
+  postTransitionStub: VaultStub;
+
+  constructor(preTransitionStub: VaultStub, active: string) {
+    this.preTransitionStub = preTransitionStub;
+
+    let postTransitionStub = preTransitionStub.clone();
+    postTransitionStub.emergencyShutdown = active;
+    this.postTransitionStub = postTransitionStub;
+
+    this.mockEvent = new GenericAttributeUpdateEvent<
+      EmergencyShutdown,
+      boolean
+    >(preTransitionStub.shareToken.address, active, null, null);
+
+    handleEmergencyShutdown(this.mockEvent.mock);
     MockBlock.IncrementBlock();
   }
 }

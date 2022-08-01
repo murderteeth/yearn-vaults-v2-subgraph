@@ -75,6 +75,7 @@
         }
       ]
     },
+    { "name": "EmergencyShutdown", "inputs": [{ "name": "active", "type": "bool", "indexed": false }], "anonymous": false, "type": "event" },
     {
       "anonymous": false,
       "name": "UpdateGovernance",

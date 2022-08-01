@@ -31,6 +31,7 @@ import {
   StrategyUpdatePerformanceFee as StrategyUpdatePerformanceFeeEvent,
   StrategyUpdateMinDebtPerHarvest as StrategyUpdateMinDebtPerHarvestEvent,
   StrategyUpdateMaxDebtPerHarvest as StrategyUpdateMaxDebtPerHarvestEvent,
+  EmergencyShutdown as EmergencyShutdownEvent,
 } from '../../generated/Registry/Vault';
 import { Strategy, StrategyMigration, Vault } from '../../generated/schema';
 import { printCallInfo } from '../utils/commons';
@@ -607,6 +608,19 @@ export function handleUpdateGovernance(event: UpdateGovernance): void {
   vaultLibrary.handleUpdateGovernance(
     event.address,
     event.params.governance,
+    ethTransaction
+  );
+}
+
+export function handleEmergencyShutdown(event: EmergencyShutdownEvent): void {
+  let ethTransaction = getOrCreateTransactionFromEvent(
+    event,
+    'EmergencyShutdown'
+  );
+
+  vaultLibrary.handleEmergencyShutdown(
+    event.address,
+    event.params.active,
     ethTransaction
   );
 }

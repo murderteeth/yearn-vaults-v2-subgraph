@@ -28,7 +28,8 @@ export class VaultStub extends GenericStateStub {
       null, // depositLimit
       null, // availableDepositLimit
       TokenStub.DefaultToken(VaultStub.DefaultAddress),
-      TokenStub.DefaultToken(TokenStub.DefaultTokenAddress)
+      TokenStub.DefaultToken(TokenStub.DefaultTokenAddress),
+      null // emergencyShutdown
     );
   }
 
@@ -158,6 +159,15 @@ export class VaultStub extends GenericStateStub {
     this._availableDepositLimit = value;
   }
 
+  private _emergencyShutdown: string;
+  public get emergencyShutdown(): string {
+    return this._emergencyShutdown;
+  }
+  public set emergencyShutdown(value: string) {
+    this._updateStubField<boolean>('emergencyShutdown', value);
+    this._emergencyShutdown = value;
+  }
+
   shareToken: TokenStub;
   wantToken: TokenStub;
 
@@ -178,7 +188,8 @@ export class VaultStub extends GenericStateStub {
       this.depositLimit,
       this.availableDepositLimit,
       this.shareToken,
-      this.wantToken
+      this.wantToken,
+      this.emergencyShutdown
     );
   }
 
@@ -198,7 +209,8 @@ export class VaultStub extends GenericStateStub {
     depositLimit: string | null,
     availableDepositLimit: string | null,
     shareToken: TokenStub,
-    wantToken: TokenStub
+    wantToken: TokenStub,
+    emergencyShutdown: string | null
   ) {
     super(shareToken.address);
     this.shareToken = shareToken;
@@ -275,6 +287,11 @@ export class VaultStub extends GenericStateStub {
     } else {
       this._availableDepositLimit = '100';
     }
+    if (emergencyShutdown) {
+      this._emergencyShutdown = emergencyShutdown;
+    } else {
+      this._emergencyShutdown = 'false';
+    }
 
     // update stubs by triggering each field's setter
     this.totalAssets = this._totalAssets;
@@ -287,6 +304,7 @@ export class VaultStub extends GenericStateStub {
     this.apiVersion = this._apiVersion;
     this.depositLimit = this._depositLimit;
     this.availableDepositLimit = this._availableDepositLimit;
+    this.emergencyShutdown = this._emergencyShutdown;
 
     // these don't have setters so we directly update them
     this._updateStubField<Address>('token', this.wantToken.address);

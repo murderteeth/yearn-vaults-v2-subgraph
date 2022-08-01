@@ -124,6 +124,8 @@ dataSources:
           handler: handleUpdateGovernance
         - event: UpdateDepositLimit(uint256)
           handler: handleUpdateDepositLimit
+        - event: EmergencyShutdown(bool)
+          handler: handleEmergencyShutdown
       file: {{{mappingFile}}}
   {{/vaultsWithPreregisteredStrategies}}
 
@@ -208,6 +210,8 @@ dataSources:
           handler: handleUpdateGovernance
         - event: UpdateDepositLimit(uint256)
           handler: handleUpdateDepositLimit
+        - event: EmergencyShutdown(bool)
+          handler: handleEmergencyShutdown
       {{#callHandlersEnabled}}
       {{^disableProblematicCallHandlers}}
       callHandlers:
@@ -314,6 +318,8 @@ templates:
           handler: handleStrategyUpdateMaxDebtPerHarvest
         - event: StrategyUpdatePerformanceFee(indexed address,uint256)
           handler: handleStrategyUpdatePerformanceFee
+        - event: EmergencyShutdown(bool)
+          handler: handleEmergencyShutdown
       {{#callHandlersEnabled}}
       {{^disableProblematicCallHandlers}}
       callHandlers:
