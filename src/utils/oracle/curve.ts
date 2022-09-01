@@ -6,6 +6,8 @@ import {
   ETH_MAINNET_NETWORK,
   FTM_MAINNET_CALCULATIONS_CURVE_ADDRESS_0_8_7,
   FTM_MAINNET_NETWORK,
+  OPS_MAINNET_CALCULATIONS_CURVE_ADDRESS,
+  OPS_MAINNET_NETWORK,
 } from '../constants';
 
 interface CurveOracle {
@@ -76,6 +78,10 @@ export function getCurveCalculations(): CurveOracle {
   } else if (network == FTM_MAINNET_NETWORK) {
     return new CurveOracle_0_8_7(
       Address.fromString(FTM_MAINNET_CALCULATIONS_CURVE_ADDRESS_0_8_7)
+    );
+  } else if (network == OPS_MAINNET_NETWORK) {
+    return new CurveOracle_0_8_7(
+      Address.fromString(OPS_MAINNET_CALCULATIONS_CURVE_ADDRESS)
     );
   } else {
     log.critical('No curve oracle on network {}', [network]);

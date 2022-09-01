@@ -14,6 +14,9 @@ import {
   ARB_MAINNET_NETWORK,
   ARB_MAINNET_USDC_ORACLE_ADDRESS,
   ARB_MAINNET_CALCULATIONS_SUSHI_SWAP_ADDRESS,
+  OPS_MAINNET_NETWORK,
+  OPS_MAINNET_USDC_ORACLE_ADDRESS,
+  OPS_MAINNET_CALCULATIONS_SUSHI_SWAP_ADDRESS,
 } from '../constants';
 import { getCurveCalculations } from './curve';
 import { YShareOracle } from './yShare';
@@ -23,6 +26,7 @@ function getSushiSwapCalculationsAddress(network: string): Address {
   map.set(ETH_MAINNET_NETWORK, ETH_MAINNET_CALCULATIONS_SUSHI_SWAP_ADDRESS);
   map.set(FTM_MAINNET_NETWORK, FTM_MAINNET_CALCULATIONS_SUSHI_SWAP_ADDRESS);
   map.set(ARB_MAINNET_NETWORK, ARB_MAINNET_CALCULATIONS_SUSHI_SWAP_ADDRESS);
+  map.set(OPS_MAINNET_NETWORK, OPS_MAINNET_CALCULATIONS_SUSHI_SWAP_ADDRESS);
   let address = changetype<Address>(Address.fromHexString(map.get(network)));
   return address;
 }
@@ -33,6 +37,7 @@ function getOracleCalculatorAddress(network: string): Address {
   map.set(ETH_MAINNET_NETWORK, ETH_MAINNET_USDC_ORACLE_ADDRESS);
   map.set(FTM_MAINNET_NETWORK, FTM_MAINNET_USDC_ORACLE_ADDRESS);
   map.set(ARB_MAINNET_NETWORK, ARB_MAINNET_USDC_ORACLE_ADDRESS);
+  map.set(OPS_MAINNET_NETWORK, OPS_MAINNET_USDC_ORACLE_ADDRESS);
   let address = changetype<Address>(Address.fromHexString(map.get(network)));
   return address;
 }

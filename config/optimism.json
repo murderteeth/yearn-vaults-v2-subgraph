@@ -1,0 +1,19 @@
+{
+  "startBlock": "18097300",
+  "network": "optimism",
+  "callHandlersEnabled": false,
+
+  "Registry": "0x1ba4eB0F44AB82541E56669e18972b0d6037dfE0",
+  "registryV2Enabled": false,
+  "registryV2Address": "0x0000000000000000000000000000000000000000",
+  "registryV2StartBlock": "9999999999",
+
+  "manualVaults": [],
+  "vaultsWithPreregisteredStrategies": [],
+
+  "graftEnabled": false,
+  "graftBase": "subgraph_deployment_id",
+  "graftBlock": "0",
+
+  "disableProblematicCallHandlers": false
+}
