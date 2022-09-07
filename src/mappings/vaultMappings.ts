@@ -32,6 +32,7 @@ import {
   StrategyUpdateMinDebtPerHarvest as StrategyUpdateMinDebtPerHarvestEvent,
   StrategyUpdateMaxDebtPerHarvest as StrategyUpdateMaxDebtPerHarvestEvent,
   EmergencyShutdown as EmergencyShutdownEvent,
+  UpdateWithdrawalQueue,
 } from '../../generated/Registry/Vault';
 import { Strategy, StrategyMigration, Vault } from '../../generated/schema';
 import { printCallInfo } from '../utils/commons';
@@ -200,6 +201,7 @@ export function handleStrategyMigrated(event: StrategyMigratedEvent): void {
       ethTransaction
     );
 
+    //Create new strategy
     if (Strategy.load(newStrategyAddress.toHexString()) !== null) {
       log.warning(
         '[Strategy Migrated] Migrating to strategy {} but it has already been created',
@@ -218,12 +220,18 @@ export function handleStrategyMigrated(event: StrategyMigratedEvent): void {
         null,
         ethTransaction
       );
-      vaultLibrary.strategyRemovedFromQueue(
-        oldStrategyAddress,
-        ethTransaction,
-        event
-      );
     }
+
+    //We can now remove the old strat from the queue
+    log.info('[Strategy Migrated] Removing old strategy', [
+      oldStrategyAddress.toHexString(),
+    ]);
+
+    vaultLibrary.strategyRemovedFromQueue(
+      oldStrategyAddress,
+      ethTransaction,
+      event
+    );
   }
 }
 
@@ -673,7 +681,7 @@ export function handleUpdateManagementFee(
     event.params.managementFee
   );
 }
-
+//strategyAddedToQueue 0xa8727d412c6fa1e2497d6d6f275e2d9fe4d9318d5b793632e60ad9d38ee8f1fa
 export function handleStrategyAddedToQueue(
   event: StrategyAddedToQueueEvent
 ): void {
@@ -688,7 +696,7 @@ export function handleStrategyAddedToQueue(
     event
   );
 }
-
+//strategyRemovedFromQueue 0x8e1ec3c16d6a67ea8effe2ac7adef9c2de0bc0dc47c49cdf18f6a8b0048085be
 export function handleStrategyRemovedFromQueue(
   event: StrategyRemovedFromQueueEvent
 ): void {
@@ -701,6 +709,17 @@ export function handleStrategyRemovedFromQueue(
     ethTransaction,
     event
   );
+}
+//UpdateWithdrawalQueue -> 0x695ac3ac73f08f2002284ffe563cefe798ee2878a5e04219522e2e99eb89d168
+export function handleUpdateWithdrawalQueue(
+  event: UpdateWithdrawalQueue
+): void {
+  let ethTransaction = getOrCreateTransactionFromEvent(
+    event,
+    'UpdateWithdrawalQueue'
+  );
+
+  vaultLibrary.UpdateWithdrawalQueue(event.params.queue, ethTransaction, event);
 }
 
 export function handleUpdateRewards(event: UpdateRewardsEvent): void {
