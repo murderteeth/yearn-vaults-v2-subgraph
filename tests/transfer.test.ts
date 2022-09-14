@@ -1,10 +1,26 @@
-import { assert, clearStore, log, test } from 'matchstick-as/assembly/index';
+import {
+  assert,
+  clearStore,
+  createMockedFunction,
+  log,
+  test,
+} from 'matchstick-as/assembly/index';
 import { CreateVaultTransition } from './transitionMocks/createVaultTransition';
 import { defaults } from './default';
 import { CreateStrategyTransition } from './transitionMocks/createStrategyTransition';
-import { Account, Transaction, Vault } from '../generated/schema';
-import { buildIdFromAccountToAccountAndTransaction } from '../src/utils/transfer';
 import {
+  Account,
+  Strategy,
+  Token,
+  Transaction,
+  Vault,
+} from '../generated/schema';
+import {
+  buildIdFromAccountToAccountAndTransaction,
+  getOrCreate,
+} from '../src/utils/transfer';
+import {
+  BurnERC20Transition,
   MintERC20Transition,
   TransferERC20Transition,
 } from './transitionMocks/ERC20Transition';
@@ -12,7 +28,10 @@ import {
   recognizeStrategyFees,
   recognizeTreasuryFees,
 } from '../src/utils/token-fees';
-
+import { transfer } from '../src/utils/account/vault-position-update';
+import { Strategy as StrategyContract } from '../generated/templates/Vault/Strategy';
+import { Address, BigInt, ethereum } from '@graphprotocol/graph-ts';
+import { ZERO_ADDRESS } from '../src/utils/constants';
 class FeeTestInfo {
   vaultAddress: string;
   transferId: string;
@@ -73,6 +92,38 @@ function prepareFeeTest(
     paymentAmount: paymentAmount,
   };
 }
+
+test('Test handleTransfer properly updates delegatedAssets', () => {
+  let senderAddress = defaults.senderAddress;
+  let vaultAssets = '1000000000000000000';
+  let paymentAmount = '1000000000000000000';
+
+  // create vault with shares for beneficiary
+  let vault = CreateVaultTransition.DefaultVaultWithDepositedBalance(
+    vaultAssets,
+    senderAddress
+  );
+
+  // create strategy for vault
+  let strategy = CreateStrategyTransition.DefaultStrategy(vault.stub);
+  strategy.stub.delegatedAssets = BigInt.fromString('20');
+
+  // simulate burn fee shares during withdraw
+  new TransferERC20Transition(
+    senderAddress,
+    defaults.anotherAddress,
+    paymentAmount,
+    vault.stub.shareToken,
+    false // skipTransferHandler
+  );
+
+  assert.fieldEquals(
+    'Strategy',
+    strategy.stub.address,
+    'delegatedAssets',
+    '20'
+  );
+});
 
 /* We need to disable TokenFee tests until the strategy.strategist field is implemented and kept up to date. See TokenFee.ts */
 /*

@@ -23,11 +23,15 @@ import {
 import { getDayIDFromIndex } from '../src/utils/vault/vault-day-data';
 import { BIGINT_ZERO } from '../src/utils/constants';
 import { Vault } from '../generated/schema';
+
 import {
   MockStrategyAddedToQueueTransition,
   MockStrategyRemovedFromQueueTransition,
   MockUpdateWithdrawalQueueTransition,
 } from './transitionMocks/vaultAttributeTransitions';
+
+import { StrategyStub } from './stubs/strategyStateStub';
+import { BigInt } from '@graphprotocol/graph-ts';
 
 test('Test handleHarvested Event', () => {
   clearStore();
@@ -71,6 +75,40 @@ test('Test handleHarvested Event', () => {
   assert.fieldEquals('Harvest', harvestId, 'loss', loss);
   assert.fieldEquals('Harvest', harvestId, 'debtPayment', debtPayment);
   assert.fieldEquals('Harvest', harvestId, 'debtOutstanding', debtOutstanding);
+
+  assert.fieldEquals('Strategy', vaultAddr, 'delegatedAssets', '0');
+});
+
+test('Test delegatedAssets', () => {
+  clearStore();
+
+  let vault = CreateVaultTransition.DefaultVault();
+  let vaultAddr = vault.stub.shareToken.address;
+
+  let strategyStub = StrategyStub.DefaultStrategyStub(vault.stub);
+  strategyStub.delegatedAssets = BigInt.fromString('1');
+
+  let strategy = new CreateStrategyTransition(
+    vault.stub,
+    null, // debt limit
+    null, // rate limit
+    null, // performance fee
+    strategyStub // strategyStub
+  );
+
+  let profit = '33043378';
+  let loss = '0';
+  let debtPayment = '0';
+  let debtOutstanding = '0'; // this means the vault acquired all of the tokens from the strategy?
+
+  let harvestTransition = new HarvestedTransition(
+    strategy.stub,
+    profit,
+    loss,
+    debtPayment,
+    debtOutstanding
+  );
+  assert.fieldEquals('Strategy', vaultAddr, 'delegatedAssets', '1');
 });
 
 test('Test handleTransfer properly identifies Strategist fees', () => {});

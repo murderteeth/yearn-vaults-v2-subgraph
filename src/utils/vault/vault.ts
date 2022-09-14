@@ -28,6 +28,7 @@ import * as registryLibrary from '../registry/registry';
 import { updateVaultDayData } from './vault-day-data';
 import { booleanToString, removeElementFromArray } from '../commons';
 import { getOrCreateHealthCheck } from '../healthCheck';
+import { Strategy as StrategyContract } from '../../../generated/templates/Vault/Strategy';
 
 const buildId = (vaultAddress: Address): string => {
   return vaultAddress.toHexString();
@@ -105,6 +106,7 @@ export function getOrCreate(
   let vault = Vault.load(id);
 
   if (vault == null) {
+    log.info('CREATING NEW VAULT!!!!!!!!!!!!!!!!!!!!!1', []);
     vault = createNewVaultFromAddress(vaultAddress, transaction);
     // TODO Set the registry.
     if (createTemplate) {
@@ -450,6 +452,19 @@ export function transfer(
     shareAmount,
     transaction
   );
+
+  if (vault != null) {
+    for (let i = 0; i < vault.strategyIds.length; i++) {
+      let loadedStrategy = Strategy.load(vault.strategyIds[i]);
+      if (loadedStrategy != null) {
+        let strategyContract = StrategyContract.bind(
+          Address.fromString(vault.strategyIds[i])
+        );
+        loadedStrategy.delegatedAssets = strategyContract.delegatedAssets();
+        loadedStrategy.save();
+      }
+    }
+  }
 }
 
 export function strategyReported(

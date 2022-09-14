@@ -65,7 +65,8 @@ export function handleStrategyAddedV2(event: StrategyAddedV2Event): void {
     event.params.maxDebtPerHarvest,
     event.params.performanceFee,
     null,
-    transaction
+    transaction,
+    BIGINT_ZERO
   );
 }
 
@@ -85,7 +86,8 @@ export function handleStrategyAddedV1(event: StrategyAddedV1Event): void {
     BIGINT_ZERO,
     event.params.performanceFee,
     null,
-    transaction
+    transaction,
+    BIGINT_ZERO
   );
 }
 
@@ -218,7 +220,8 @@ export function handleStrategyMigrated(event: StrategyMigratedEvent): void {
         oldStrategy.maxDebtPerHarvest,
         oldStrategy.performanceFeeBps,
         null,
-        ethTransaction
+        ethTransaction,
+        oldStrategy.delegatedAssets
       );
     }
 

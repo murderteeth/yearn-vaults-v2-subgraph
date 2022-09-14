@@ -7,6 +7,8 @@ import {
   Transfer,
   Vault,
 } from '../../generated/schema';
+import { Strategy as StrategyContract } from '../../generated/templates/Vault/Strategy';
+
 import { usdcPrice } from './oracle/usdc-oracle';
 import * as tokenLibrary from './token';
 import * as tokenFeeLibrary from './token-fees';

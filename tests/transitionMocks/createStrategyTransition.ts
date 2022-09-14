@@ -3,6 +3,7 @@ import { VaultStub } from '../stubs/vaultStateStub';
 import { StrategyStub } from '../stubs/strategyStateStub';
 import { StrategyAddedEventBuilder } from '../mappingParamBuilders/strategyParamBuilder';
 import { handleStrategyAddedV1 } from '../../src/mappings/vaultMappings';
+import { BIGINT_ZERO } from '../../src/utils/constants';
 
 /**
  * Using the provided vaultStub/strategyStub, emulate a strategy being added to a vault using handleStrategyAddedV1.
@@ -26,7 +27,8 @@ export class CreateStrategyTransition {
       false,
       null,
       null,
-      null
+      null,
+      BIGINT_ZERO // delegatedAssets
     );
 
     return new CreateStrategyTransition(
@@ -54,7 +56,8 @@ export class CreateStrategyTransition {
       false,
       null,
       null,
-      null
+      null,
+      BIGINT_ZERO // delegatedAssets
     );
 
     stub.wantToken.setAccountBalance(stub.address, outstandingDebt);

@@ -52,7 +52,8 @@ export function handleStrategyAddedV2(event: StrategyAddedV2Event): void {
       event.params.maxDebtPerHarvest,
       event.params.performanceFee,
       null,
-      transaction
+      transaction,
+      BIGINT_ZERO
     );
   }
 }

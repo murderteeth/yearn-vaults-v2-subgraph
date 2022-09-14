@@ -29,7 +29,8 @@ export function createAndGet(
   maxDebtPerHarvest: BigInt,
   performanceFee: BigInt,
   clonedFrom: Strategy | null,
-  transaction: Transaction
+  transaction: Transaction,
+  delegatedAssets: BigInt
 ): Strategy {
   log.info('[Strategy] CreateAndGet strategy {} in vault {} in TxHash {}', [
     strategyAddress.toHexString(),
@@ -59,6 +60,7 @@ export function createAndGet(
     strategy.minDebtPerHarvest = minDebtPerHarvest;
     strategy.maxDebtPerHarvest = maxDebtPerHarvest;
     strategy.performanceFeeBps = performanceFee;
+    strategy.delegatedAssets = delegatedAssets;
     let tryApiVersion = strategyContract.try_apiVersion();
     strategy.apiVersion = tryApiVersion.reverted ? '0' : tryApiVersion.value;
     let tryKeeper = strategyContract.try_keeper();
@@ -91,10 +93,15 @@ export function createAndGet(
 
     let vaultInstance = Vault.load(vault.toHexString());
     if (vaultInstance != null) {
-      //Add the new strategy to the withdrawl queue of the vault
+      // Add the new strategy to the withdrawl queue of the vault
       let withdrawlQueue = vaultInstance.withdrawalQueue;
       withdrawlQueue.push(strategy.address.toHexString());
       vaultInstance.withdrawalQueue = withdrawlQueue;
+
+      // Add strategy ids to vault
+      let strategyIds = vaultInstance.strategyIds;
+      strategyIds.push(strategyId);
+      vaultInstance.strategyIds = strategyIds;
       vaultInstance.save();
     }
   }
@@ -194,6 +201,11 @@ export function harvest(
   if (harvest == null) {
     let strategyContract = StrategyContract.bind(strategyAddress);
     let strategy = Strategy.load(strategyAddress.toHexString());
+    if (strategy != null) {
+      strategy.delegatedAssets = strategyContract.delegatedAssets();
+      strategy.save();
+    }
+
     harvest = new Harvest(harvestId);
     harvest.timestamp = timestamp;
     harvest.blockNumber = blockNumber;
@@ -241,7 +253,8 @@ export function strategyCloned(
     BIGINT_ZERO,
     BIGINT_ZERO,
     strategyClonedFrom,
-    transaction
+    transaction,
+    BIGINT_ZERO
   );
 }
 

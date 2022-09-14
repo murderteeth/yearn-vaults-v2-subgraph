@@ -1,6 +1,6 @@
 import { Address, ethereum, BigInt } from '@graphprotocol/graph-ts';
 import { createMockedFunction, log } from 'matchstick-as';
-import { ZERO_ADDRESS } from '../../src/utils/constants';
+import { BIGINT_ZERO, ZERO_ADDRESS } from '../../src/utils/constants';
 import { defaults } from '../default';
 import { TokenStub } from './tokenStateStub';
 import { GenericStateStub } from './genericStateStub';
@@ -22,7 +22,8 @@ export class StrategyStub extends GenericStateStub {
       false, // emergencyExit
       null, // strategist
       null, // keeper
-      null // rewards
+      null, // rewards
+      null // delegatedAssets
     );
   }
 
@@ -124,6 +125,15 @@ export class StrategyStub extends GenericStateStub {
     this._rewards = value;
   }
 
+  private _delegatedAssets: BigInt;
+  public get delegatedAssets(): BigInt {
+    return this._delegatedAssets;
+  }
+  public set delegatedAssets(value: BigInt) {
+    this._updateStubField<BigInt>('delegatedAssets', value.toString());
+    this._delegatedAssets = value;
+  }
+
   //keeper: string;
   //delegatedAssets: string;
   //estimatedTotalAssets: string;
@@ -143,7 +153,8 @@ export class StrategyStub extends GenericStateStub {
       this.emergencyExit,
       this.strategist,
       this.keeper,
-      this.rewards
+      this.rewards,
+      this.delegatedAssets
     );
   }
 
@@ -159,7 +170,8 @@ export class StrategyStub extends GenericStateStub {
     emergencyExit: boolean,
     strategist: string | null,
     keeper: string | null,
-    rewards: string | null
+    rewards: string | null,
+    delegatedAssets: BigInt | null
   ) {
     let _addressToUse = StrategyStub.DefaultAddress;
     if (address) {
@@ -208,6 +220,12 @@ export class StrategyStub extends GenericStateStub {
       this._rewards = defaults.rewardsAddress;
     }
 
+    if (delegatedAssets) {
+      this._delegatedAssets = delegatedAssets;
+    } else {
+      this._delegatedAssets = BIGINT_ZERO;
+    }
+
     // figure out totalAssets by querying the wantToken balance
     if (this.wantToken.hasAccountBalance(this.address)) {
       this._totalAssets = this.wantToken.getAccountBalance(this.address);
@@ -227,6 +245,7 @@ export class StrategyStub extends GenericStateStub {
     this.totalAssets = this._totalAssets;
     this.keeper = this._keeper;
     this.rewards = this._rewards;
+    this.delegatedAssets = this._delegatedAssets;
 
     // these don't have setters so we directly update them
     this._updateStubField<Address>('token', this.wantToken.address);

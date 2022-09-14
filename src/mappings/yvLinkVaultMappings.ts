@@ -83,7 +83,8 @@ export function handleStrategyAddedV2(event: StrategyAddedV2Event): void {
       event.params.maxDebtPerHarvest,
       event.params.performanceFee,
       null,
-      transaction
+      transaction,
+      BIGINT_ZERO
     );
   }
 }
@@ -231,7 +232,8 @@ export function handleStrategyMigrated(event: StrategyMigrated): void {
           oldStrategy.maxDebtPerHarvest,
           oldStrategy.performanceFeeBps,
           null,
-          ethTransaction
+          ethTransaction,
+          oldStrategy.delegatedAssets
         );
       }
       //We can now remove the old strat from the queue

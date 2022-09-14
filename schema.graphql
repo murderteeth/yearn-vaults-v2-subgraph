@@ -136,6 +136,8 @@ type Vault @entity {
   historicalUpdates: [VaultUpdate!]! @derivedFrom(field: "vault")
   "Strategies for this Vault"
   strategies: [Strategy!]! @derivedFrom(field: "vault")
+  "Strategy Ids for this vault"
+  strategyIds: [Strategy!]!
   "Token deposits into the Vault"
   deposits: [Deposit!]! @derivedFrom(field: "vault")
   "Token withdrawals from the Vault"
@@ -471,6 +473,8 @@ type Strategy @entity {
   strategist: Bytes!
   "The address for rewards"
   rewards: Bytes!
+  "The amount of assets this strategy manages that should not be included in Yearn's Total Value Locked (TVL) calculation across it's ecosystem."
+  delegatedAssets: BigInt!
 
   #"Provide an indication of whether this strategy is currently active"
   #isActive: Boolean!
