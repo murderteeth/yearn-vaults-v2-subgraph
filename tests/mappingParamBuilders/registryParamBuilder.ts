@@ -97,7 +97,8 @@ export class NewReleaseEventBuilder extends ParamFactoryBase {
       'default_log_type',
       this.block.mock,
       this.transaction.mock,
-      eventParams
+      eventParams,
+      null // transactionReceipt
     );
 
     this.mock = releaseEvent;

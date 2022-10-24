@@ -30,7 +30,7 @@ jobs:
       - name: Install node
         uses: actions/setup-node@v1
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: v16.13.1
 
       - name: Install dependencies
         run: yarn --frozen-lockfile

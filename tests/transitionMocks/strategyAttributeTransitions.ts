@@ -162,7 +162,8 @@ export class EmergencyExitTransition {
       'default_log_type',
       MockBlock.NewDefaultBlock().mock,
       MockTransaction.NewDefaultTxn().mock,
-      []
+      [],
+      null // transactionReceipt
     );
 
     handleEmergencyExitEnabled(event);

@@ -12,8 +12,6 @@ import {
   Withdraw1Call,
   Withdraw2Call,
   Withdraw3Call,
-  AddStrategyCall as AddStrategyV1Call,
-  AddStrategy1Call as AddStrategyV2Call,
   StrategyAdded as StrategyAddedV1Event,
   StrategyAdded1 as StrategyAddedV2Event,
   Deposit as DepositEvent,
@@ -34,8 +32,8 @@ import {
   EmergencyShutdown as EmergencyShutdownEvent,
   UpdateWithdrawalQueue,
 } from '../../generated/Registry/Vault';
-import { Strategy, StrategyMigration, Vault } from '../../generated/schema';
-import { printCallInfo } from '../utils/commons';
+import { Strategy } from '../../generated/schema';
+import { fromSharesToAmount, printCallInfo } from '../utils/commons';
 import { BIGINT_ZERO, BIGINT_MAX, ZERO_ADDRESS } from '../utils/constants';
 import * as strategyLibrary from '../utils/strategy/strategy';
 import {
@@ -562,7 +560,7 @@ export function handleTransfer(event: TransferEvent): void {
     let totalAssets = vaultLibrary.getTotalAssets(event.address);
     let totalSupply = vaultContract.totalSupply();
     let sharesAmount = event.params.value;
-    let amount = sharesAmount.times(totalAssets).div(totalSupply);
+    let amount = fromSharesToAmount(sharesAmount, totalAssets, totalSupply);
     // share  = (amount * totalSupply) / totalAssets
     // amount = (shares * totalAssets) / totalSupply
     vaultLibrary.transfer(

@@ -74,7 +74,8 @@ export class StrategyAddedEventBuilder extends ParamFactoryBase {
       'default_log_type',
       this.block.mock,
       this.transaction.mock,
-      eventParams
+      eventParams,
+      null // transactionReceipt
     );
 
     this.mock = releaseEvent;
@@ -152,7 +153,8 @@ export class HarvestedEventBuilder {
       'default_log_type',
       this.block.mock,
       this.transaction.mock,
-      eventParams
+      eventParams,
+      null // transactionReceipt
     );
 
     this.mock = harvestEvent;
@@ -270,7 +272,8 @@ export class StrategyReported_v0_3_0_v0_3_1EventBuilder {
       'default_log_type',
       this.block.mock,
       this.transaction.mock,
-      eventParams
+      eventParams,
+      null // transactionReceipt
     );
 
     this.mock = reportEvent;

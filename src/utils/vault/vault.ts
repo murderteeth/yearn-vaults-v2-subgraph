@@ -130,6 +130,8 @@ export function create(
   let vaultEntity = Vault.load(id);
   if (vaultEntity == null) {
     vaultEntity = createNewVaultFromAddress(vault, transaction);
+    vaultEntity.strategyIds = [];
+    vaultEntity.availableDepositLimit = BIGINT_ZERO;
     vaultEntity.classification = classification;
     vaultEntity.registry = registry.id;
     vaultEntity.apiVersion = apiVersion;

@@ -7,6 +7,7 @@ import {
   dataSource,
 } from '@graphprotocol/graph-ts';
 import { Transaction } from '../../generated/schema';
+import { BIGINT_ZERO } from './constants';
 
 export function getTimeInMillis(time: BigInt): BigInt {
   return time.times(BigInt.fromI32(1000));
@@ -129,4 +130,28 @@ export function removeElementFromArray<T>(arr: Array<T>, e: T): Array<T> {
     newArr.push(current);
   }
   return newArr;
+}
+
+// amount = (shares * totalAssets) / totalSupply
+export function fromSharesToAmount(
+  sharesAmount: BigInt,
+  totalAssets: BigInt,
+  totalSupply: BigInt
+): BigInt {
+  if (totalSupply.isZero()) {
+    return BIGINT_ZERO;
+  }
+  return sharesAmount.times(totalAssets).div(totalSupply);
+}
+
+// share  = (amount * totalSupply) / totalAssets
+export function fromAmountToShares(
+  amount: BigInt,
+  totalAssets: BigInt,
+  totalSupply: BigInt
+): BigInt {
+  if (totalAssets.isZero()) {
+    return BIGINT_ZERO;
+  }
+  return amount.times(totalSupply).div(totalAssets);
 }

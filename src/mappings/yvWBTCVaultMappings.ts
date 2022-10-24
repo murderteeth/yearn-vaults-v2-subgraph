@@ -1,4 +1,4 @@
-import { Address, log, BigInt } from '@graphprotocol/graph-ts';
+import { Address, log } from '@graphprotocol/graph-ts';
 import { Vault as VaultContract } from '../../generated/Registry/Vault';
 import {
   StrategyReported as StrategyReported_v0_3_0_v0_3_1_Event,
@@ -26,7 +26,11 @@ import {
   UpdateWithdrawalQueue,
 } from '../../generated/YvWBTCVault/Vault';
 import { Strategy, Transaction, Vault } from '../../generated/schema';
-import { isEventBlockNumberLt, printCallInfo } from '../utils/commons';
+import {
+  fromSharesToAmount,
+  isEventBlockNumberLt,
+  printCallInfo,
+} from '../utils/commons';
 import {
   BIGINT_ZERO,
   ZERO_ADDRESS,
@@ -313,9 +317,7 @@ export function handleDeposit(call: DepositCall): void {
       '[Vault mappings] Handle deposit() shares {} - total assets {} - total supply {}',
       [sharesAmount.toString(), totalAssets.toString(), totalSupply.toString()]
     );
-    let amount = totalSupply.isZero()
-      ? BIGINT_ZERO
-      : sharesAmount.times(totalAssets).div(totalSupply);
+    let amount = fromSharesToAmount(sharesAmount, totalAssets, totalSupply);
     log.info('[Vault mappings] Handle deposit() shares {} - amount {}', [
       sharesAmount.toString(),
       amount.toString(),
@@ -669,7 +671,7 @@ export function handleTransfer(event: TransferEvent): void {
       let totalAssets = vaultLibrary.getTotalAssets(event.address);
       let totalSupply = vaultContract.totalSupply();
       let sharesAmount = event.params.value;
-      let amount = sharesAmount.times(totalAssets).div(totalSupply);
+      let amount = fromSharesToAmount(sharesAmount, totalAssets, totalSupply);
       // share  = (amount * totalSupply) / totalAssets
       // amount = (shares * totalAssets) / totalSupply
       vaultLibrary.transfer(

@@ -53,7 +53,12 @@ function createVaultUpdate(
   newManagementFee: BigInt | null,
   newPerformanceFee: BigInt | null,
   newRewards: Address | null,
-  newHealthCheck: string | null
+  newHealthCheck: string | null,
+  availableDepositLimit: BigInt,
+  depositLimit: BigInt,
+  guardian: Bytes,
+  management: Bytes,
+  governance: Bytes
 ): VaultUpdate {
   log.debug('[VaultUpdate] Creating vault update with id {}', [id]);
 
@@ -68,6 +73,8 @@ function createVaultUpdate(
   vaultUpdate.newManagementFee = newManagementFee;
   vaultUpdate.newPerformanceFee = newPerformanceFee;
   vaultUpdate.newRewards = newRewards;
+  vaultUpdate.availableDepositLimit = availableDepositLimit;
+  vaultUpdate.depositLimit = depositLimit;
 
   // Balances & Shares
   vaultUpdate.tokensDeposited = tokensDeposited;
@@ -77,6 +84,9 @@ function createVaultUpdate(
   // Performance
   vaultUpdate.balancePosition = balancePosition;
   vaultUpdate.returnsGenerated = returnsGenerated;
+  vaultUpdate.guardian = guardian;
+  vaultUpdate.management = management;
+  vaultUpdate.governance = governance;
   vaultUpdate.save();
 
   vault.latestUpdate = vaultUpdate.id;
@@ -175,7 +185,12 @@ export function firstDeposit(
       null, // newManagementFee
       null, // newPerformanceFee
       null, // newRewards
-      null // newHealthCheck
+      null, // newHealthCheck
+      vault.availableDepositLimit,
+      vault.depositLimit,
+      vault.guardian,
+      vault.management,
+      vault.governance
     );
   }
 
@@ -209,7 +224,12 @@ export function deposit(
       null, // newManagementFee
       null, // newPerformanceFee
       null, // newRewards
-      null // newHealthCheck
+      null, // newHealthCheck
+      vault.availableDepositLimit,
+      vault.depositLimit,
+      vault.guardian,
+      vault.management,
+      vault.governance
     );
   }
 
@@ -240,7 +260,12 @@ export function withdraw(
     null, // newManagementFee
     null, // newPerformanceFee
     null, // newRewards
-    null // newHealthCheck
+    null, // newHealthCheck
+    vault.availableDepositLimit,
+    vault.depositLimit,
+    vault.guardian,
+    vault.management,
+    vault.governance
   );
   return newVaultUpdate;
 }
@@ -278,7 +303,12 @@ export function strategyReported(
     null, // newManagementFee
     null, // newPerformanceFee
     null, // newRewards
-    null // newHealthCheck
+    null, // newHealthCheck
+    vault.availableDepositLimit,
+    vault.depositLimit,
+    vault.guardian,
+    vault.management,
+    vault.governance
   );
   return newVaultUpdate;
 }
@@ -306,7 +336,12 @@ export function performanceFeeUpdated(
     null, // newManagementFee
     performanceFee,
     null, // newRewards
-    null // newHealthCheck
+    null, // newHealthCheck
+    vault.availableDepositLimit,
+    vault.depositLimit,
+    vault.guardian,
+    vault.management,
+    vault.governance
   );
   return newVaultUpdate;
 }
@@ -334,7 +369,12 @@ export function managementFeeUpdated(
     managementFee,
     null, // newPerformanceFee
     null, // newRewards
-    null // newHealthCheck
+    null, // newHealthCheck
+    vault.availableDepositLimit,
+    vault.depositLimit,
+    vault.guardian,
+    vault.management,
+    vault.governance
   );
   return newVaultUpdate;
 }
@@ -362,7 +402,12 @@ export function rewardsUpdated(
     null, // newManagementFee
     null, // newPerformanceFee
     rewards, // newRewards
-    null // newHealthCheck
+    null, // newHealthCheck
+    vault.availableDepositLimit,
+    vault.depositLimit,
+    vault.guardian,
+    vault.management,
+    vault.governance
   );
   return newVaultUpdate;
 }
@@ -392,6 +437,11 @@ export function healthCheckUpdated(
     null, // newManagementFee
     null, // newPerformanceFee
     null, // newRewards
-    healthCheck
+    healthCheck,
+    vault.availableDepositLimit,
+    vault.depositLimit,
+    vault.guardian,
+    vault.management,
+    vault.governance
   );
 }

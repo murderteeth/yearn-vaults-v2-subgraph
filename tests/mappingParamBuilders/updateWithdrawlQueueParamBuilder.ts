@@ -45,7 +45,8 @@ export class UpdateWithdrawalQueueParamBuilder<
       'default_log_type',
       this.block.mock,
       this.transaction.mock,
-      eventParams
+      eventParams,
+      null // transactionReceipt
     );
 
     this.mock = event;
